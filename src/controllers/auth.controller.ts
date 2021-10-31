@@ -13,23 +13,17 @@ const createToken = (user: any): string => {
   });
 };
 
-export const login = async (
-  email: string,
-  password: string,
-  clientInfo: ClientInfo
-) => {
+export const login = async (email: string, password: string, clientInfo: ClientInfo) => {
   const user: any = await UserModel.authenticate(email, password);
-  const response: any = { user, token: '' }
+  const response: any = { user, token: '' };
   if (user) {
     const token = createToken(user.toJSON());
     response.token = token;
-  } 
+  }
   return response;
 };
 
-export const refreshToken = async (refreshToken: string) => {
-
-};
+export const refreshToken = async (refreshToken: string) => {};
 
 export const register = async (user: User) => {
   const savedUser: User = await UserModel.createUser(user);
@@ -73,7 +67,7 @@ export const resetPassword = async (email: string, password: string, token: stri
       throw createError(403, 'There was a problem reseting your password. Token expired');
     }
     const hashedPassword = hashPassword(password);
-    await UserModel.updateUser( email , { password: hashedPassword });
+    await UserModel.updateUser(email, { password: hashedPassword });
     return { success: true };
   } catch (error) {
     throw error;
