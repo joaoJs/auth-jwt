@@ -20,6 +20,7 @@ export default (app: any) => {
       const response = await login(email, password, client);
       if (response) {
         const { user, token } = response;
+        
         return res.json({ user, token });
       }
       return res

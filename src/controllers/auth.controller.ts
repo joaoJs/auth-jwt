@@ -13,7 +13,7 @@ const createToken = (user: any): string => {
   });
 };
 
-export const login = async (email: string, password: string, clientInfo: ClientInfo) => {
+export const login = async (email: string, password: string, clientInfo?: ClientInfo) => {
   const user: any = await UserModel.authenticate(email, password);
   const response: any = { user, token: '' };
   if (user) {

@@ -9,14 +9,29 @@ afterAll(async () => await db.closeDatabase());
 
 describe('user', () => {
   it('can register user', async () => {
-      // const user: User = {
-      //     email: 'test',
-      //     password: 'test',
-      //     name: 'test',
-      //     role: 'test'
-      // }
-      // const user = await UserModel.createUser(user)
-      // expect(async () => await UserModel.createUser(user)).not.toThrow();
-      expect(2-1).toEqual(1);
+      const user: User = {
+          email: 'test',
+          password: 'test',
+          name: 'test',
+          role: 'test'
+      }
+      
+      const createdUser = await register(user);
+      expect(user.email).toEqual(createdUser.email);
+  });
+
+  it('can login user', async () => {
+    const mockUser: User = {
+        email: 'test',
+        password: 'test',
+        name: 'test',
+        role: 'test'
+    }
+    await register(mockUser);
+    process.env.JWT_SECRET = 'test';
+    process.env.TOKEN_EXPIRES_IN = '5000' 
+    const { user, token } = await login(mockUser.email, mockUser.password);
+    expect(mockUser.email).toEqual(user.email);
+    expect(token.length).toBeGreaterThan(0);
   });
 });
