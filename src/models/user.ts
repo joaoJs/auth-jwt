@@ -4,18 +4,30 @@ import * as bcrypt from 'bcryptjs';
 
 // You User Model definition here
 
-@pre<User>('save', async function(next) {
+@pre<User>('save', async function (next) {
   const user = this;
   const hash = await bcrypt.hash(this.password, 10);
   this.password = hash;
   next();
 })
 export class User {
-  @prop()
-  public email: string;
+  @prop({ required: true, unique: true })
+  public email!: string;
+
+  @prop({ required: true })
+  public password!: string;
+
+  @prop({ required: true })
+  public name!: string;
 
   @prop()
-  public password: string;
+  public dob?: string;
+
+  @prop({ required: true })
+  public role!: string;
+
+  @prop({ default: 0 })
+  private loginErrorCount?: number;
 
   @prop()
   public passwordResetToken: string;
@@ -24,15 +36,16 @@ export class User {
   public passwordResetTokenExpires: Date;
 
   static async getUsers(
-    this: ReturnModelType<typeof User>, 
-    page: number, 
+    this: ReturnModelType<typeof User>,
+    page: number,
     limit: number,
-    parsedFilter: any) {
+    parsedFilter: any
+  ) {
     return this.find({});
   }
 
   static async getByEmail(this: ReturnModelType<typeof User>, email: string) {
-    return this.findOne({ _id: email });
+    return this.findOne({ email });
   }
 
   static async getById(this: ReturnModelType<typeof User>, userId: string) {
@@ -40,7 +53,7 @@ export class User {
   }
 
   static async updateUser(this: ReturnModelType<typeof User>, email: string, payload: any) {
-    return this.findOneAndUpdate({ email: email }, payload);
+    return this.findOneAndUpdate({ email }, payload);
   }
 
   static async deleteById(this: ReturnModelType<typeof User>, userId: string) {
@@ -51,10 +64,30 @@ export class User {
     return this.create(payload);
   }
 
-  static async authenticate(this: ReturnModelType<typeof User>, email: string, plainTextPassword: string) {
-    const user = await this.findOne({ email: email})
-    if (user && await bcrypt.compare(plainTextPassword, user.password)) return user
-    return false
+  static async authenticate(
+    this: ReturnModelType<typeof User>,
+    email: string,
+    plainTextPassword: string
+  ) {
+    const user = await this.findOne({ email });
+    if (
+      user && 
+      user.loginErrorCount < 3 &&
+      (await bcrypt.compare(plainTextPassword, user.password))) {
+      let authenticatedUser = user;
+      if (user.loginErrorCount > 0) {
+        authenticatedUser = await this.findOneAndUpdate({ email }, { loginErrorCount: 0 }, { new: true });
+      }
+      return authenticatedUser;
+    } else {
+      if (user.loginErrorCount >= 3) {
+        // TODO: force password reset here
+      } else {
+        user.loginErrorCount++;
+        const updatedUser = await this.findOneAndUpdate({ email }, { loginErrorCount: user.loginErrorCount }, { new: true });
+      }
+      return false;
+    }
   }
 }
 

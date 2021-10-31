@@ -7,7 +7,7 @@ import uuid from 'uuid';
 import { addMinutes } from 'date-fns';
 import { AnyARecord } from 'dns';
 
-const createToken = (user: any) => {
+const createToken = (user: any): string => {
   return jwt.sign(user, process.env['JWT_SECRET'], {
     expiresIn: process.env['TOKEN_EXPIRES_IN'],
   });
@@ -18,21 +18,22 @@ export const login = async (
   password: string,
   clientInfo: ClientInfo
 ) => {
- // Your solution here
   const user: any = await UserModel.authenticate(email, password);
-  return user;
+  const response: any = { user, token: '' }
+  if (user) {
+    const token = createToken(user.toJSON());
+    response.token = token;
+  } 
+  return response;
 };
 
 export const refreshToken = async (refreshToken: string) => {
- // Your solution here
 
 };
 
 export const register = async (user: User) => {
-  // Your solution here
-  console.log(user)
   const savedUser: User = await UserModel.createUser(user);
-  console.log(savedUser);
+  return savedUser;
 };
 
 export const forgotPassword = async (email: string) => {

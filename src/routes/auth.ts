@@ -14,12 +14,13 @@ export default (app: any) => {
   app.use('/api', router);
 
   router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.body)
     try {
       const { email, password, client } = req.body;
       const response = await login(email, password, client);
       if (response) {
-        console.log(response);
-        return res.json(response);
+        const { user, token } = response;
+        return res.json({ user, token });
       }
       return res
         .status(401)
