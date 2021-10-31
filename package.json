@@ -11,6 +11,12 @@
     "start:sls": "sls offline start",
     "deploy-prod": "sls --stage=production deploy"
   },
+  "config": {
+    "mongodbMemoryServer": {
+      "debug": "1",
+      "version": "4.2.3"
+    }
+  },
   "dependencies": {
     "@sendgrid/mail": "^7.4.5",
     "@typegoose/typegoose": "^7.6.3",
@@ -30,7 +36,7 @@
     "http-errors": "^1.8.0",
     "jsonschema": "^1.2.4",
     "jsonwebtoken": "^8.5.1",
-    "mongodb-memory-server": "^7.6.0",
+    "mongodb-memory-server": "7.0.0",
     "mongoose": "^5.13.3",
     "mongoose-paginate-v2": "^1.4.1",
     "multiparty": "^4.2.2",

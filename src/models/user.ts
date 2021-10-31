@@ -30,10 +30,10 @@ export class User {
   private loginErrorCount?: number;
 
   @prop()
-  public passwordResetToken: string;
+  public passwordResetToken?: string;
 
   @prop()
-  public passwordResetTokenExpires: Date;
+  public passwordResetTokenExpires?: Date;
 
   static async getUsers(
     this: ReturnModelType<typeof User>,

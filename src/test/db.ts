@@ -1,27 +1,28 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-let mongod;
+let mongod = new MongoMemoryServer();
 
 /**
- * Connect to the in-memory database.
+ * Connect to mock memory db.
  */
 export const connect = async () => {
-    mongod = await MongoMemoryServer.create();
-    const uri = await mongod.getConnectionString();
+    await mongod.start();
+    const uri = mongod.getUri();
 
     const mongooseOpts = {
         useNewUrlParser: true,
         autoReconnect: true,
         reconnectTries: Number.MAX_VALUE,
-        reconnectInterval: 1000
+        reconnectInterval: 1000,
+        poolSize: 10,
     };
 
     await mongoose.connect(uri, mongooseOpts);
 }
 
 /**
- * Drop database, close the connection and stop mongod.
+ * Close db connection
  */
 export const closeDatabase = async () => {
     await mongoose.connection.dropDatabase();
@@ -30,7 +31,7 @@ export const closeDatabase = async () => {
 }
 
 /**
- * Remove all the data for all db collections.
+ * Delete db collections
  */
 export const clearDatabase = async () => {
     const collections = mongoose.connection.collections;
