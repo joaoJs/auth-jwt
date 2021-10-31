@@ -5,6 +5,7 @@ import { comparePasswords, hashPassword } from '../helpers/hash.helper';
 import jwt from 'jsonwebtoken';
 import uuid from 'uuid';
 import { addMinutes } from 'date-fns';
+import { AnyARecord } from 'dns';
 
 const createToken = (user: any) => {
   return jwt.sign(user, process.env['JWT_SECRET'], {
@@ -18,7 +19,8 @@ export const login = async (
   clientInfo: ClientInfo
 ) => {
  // Your solution here
-
+  const user: any = await UserModel.authenticate(email, password);
+  return user;
 };
 
 export const refreshToken = async (refreshToken: string) => {
@@ -28,7 +30,9 @@ export const refreshToken = async (refreshToken: string) => {
 
 export const register = async (user: User) => {
   // Your solution here
-  
+  console.log(user)
+  const savedUser: User = await UserModel.createUser(user);
+  console.log(savedUser);
 };
 
 export const forgotPassword = async (email: string) => {
@@ -56,7 +60,8 @@ export const forgotPassword = async (email: string) => {
 
 export const resetPassword = async (email: string, password: string, token: string) => {
   try {
-    const user = await UserModel.getByEmail(email, false);
+    const user: User = await UserModel.getByEmail(email);
+    // const user = await UserModel.getByEmail(email, false);
     if (!user) {
       throw createError(403, 'There was a problem reseting your password. User does not exist');
     }
@@ -67,7 +72,7 @@ export const resetPassword = async (email: string, password: string, token: stri
       throw createError(403, 'There was a problem reseting your password. Token expired');
     }
     const hashedPassword = hashPassword(password);
-    await user.updateOne({ password: hashedPassword });
+    await UserModel.updateUser( email , { password: hashedPassword });
     return { success: true };
   } catch (error) {
     throw error;

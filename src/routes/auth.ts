@@ -18,6 +18,7 @@ export default (app: any) => {
       const { email, password, client } = req.body;
       const response = await login(email, password, client);
       if (response) {
+        console.log(response);
         return res.json(response);
       }
       return res

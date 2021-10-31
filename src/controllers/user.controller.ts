@@ -16,7 +16,7 @@ export const addUser = async (newUser: any, user: any) => {
     throw createError(403, 'You are not authorized to access');
   }
   try {
-    const existingUser = await UserModel.getByEmail(newUser.email, false);
+    const existingUser = await UserModel.getByEmail(newUser.email);
     if (existingUser) {
       return {
         exists: true,
@@ -26,7 +26,7 @@ export const addUser = async (newUser: any, user: any) => {
     if (!newUser.name) {
       newUser.name = `${newUser.firstName} ${newUser.lastName}`;
     }
-    const createdUser = await UserModel.add(newUser);
+    const createdUser = await UserModel.createUser(newUser);
     if (!createdUser) {
       return null;
     }
@@ -63,7 +63,7 @@ export const getUser = async (userId: string, user: any) => {
     throw createError(403, 'You are not authorized to access');
   }
   try {
-    const users = await UserModel.getById(userId, true);
+    const users = await UserModel.getById(userId);
     return users;
   } catch (error) {
     throw error;
@@ -119,7 +119,7 @@ export const getUserByEmail = async (userId: string, user: any, email: string) =
   if (userId !== user.id && !user.roles.includes(Role.Admin)) {
     throw createError(403, 'You are not authorized to access');
   }
-  const existingUser = await UserModel.getByEmail(email, false);
+  const existingUser = await UserModel.getByEmail(email);
   if (existingUser) {
     return {
       existingUser,
@@ -129,7 +129,7 @@ export const getUserByEmail = async (userId: string, user: any, email: string) =
 
 export const getUserById = async (userId: string, user: any, id: string) => {
   // get all members from user collection
-  const existingUser = await UserModel.getById(id, false);
+  const existingUser = await UserModel.getById(id);
   if (existingUser) {
     return {
       existingUser,
