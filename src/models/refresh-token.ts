@@ -35,8 +35,8 @@ export class RefreshToken {
   @prop({ _id: false })
   userId: string;
 
-  // @prop({ _id: false, ref: ClientInfo })
-  // client: ClientInfo;
+  @prop({ _id: false, ref: ClientInfo })
+  client: ClientInfo;
 
   @prop()
   expiresIn: Date;
@@ -62,19 +62,25 @@ export class RefreshToken {
     return this.find({ userId });
   }
 
+  static async refresh(this: ReturnModelType<typeof RefreshToken>, token: string, interval: string) {
+    const expiresIn = new Date(Date.now() + Number(interval));
+    return this.findByIdAndUpdate({ _id: token}, { expiresIn }, { new: true });
+  }
+
   static async add(
     this: ReturnModelType<typeof RefreshToken>,
     token: string,
-    expiresIn: Date,
+    expiresIn: string,
     userId: string,
     client: ClientInfo
   ) {
     const now = new Date();
+    const expirationDate = new Date(Date.now() + Number(expiresIn))
     const newDoc = new RefreshTokenModel({
       _id: token,
       userId,
       client,
-      expiresIn,
+      expiresIn: expirationDate,
       createdAt: now,
       updatedAt: now,
     });

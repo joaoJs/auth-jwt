@@ -6,6 +6,7 @@ import {
   register,
   resetPassword,
 } from '../controllers/auth.controller';
+import { ILoginResponse, IRegisterResponse } from '../controllers/auth.controller';
 
 export default (app: any) => {
   const router = Router();
@@ -14,13 +15,11 @@ export default (app: any) => {
   app.use('/api', router);
 
   router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body)
     try {
       const { email, password, client } = req.body;
-      const response = await login(email, password, client);
-      if (response) {
+      const response: ILoginResponse = await login(email, password, client);
+      if (response.user) {
         const { user, token } = response;
-        
         return res.json({ user, token });
       }
       return res
@@ -33,7 +32,7 @@ export default (app: any) => {
 
   router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response: any = await register(req.body);
+      const response: IRegisterResponse = await register(req.body);
       if (response && response.exists) {
         return res.status(403).json({ success: false, message: 'User already exists' });
       }

@@ -3,5 +3,6 @@ module.exports = {
   testEnvironment: 'node',
   collectCoverage: true,
   collectCoverageFrom: ['**/src/**/*'],
-  coveragePathIgnorePatterns: ['src/tsconfig.json']
+  coveragePathIgnorePatterns: ['src/tsconfig.json'],
+  setupFilesAfterEnv: ['./jest.setup.js']
 };

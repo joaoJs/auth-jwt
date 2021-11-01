@@ -7,27 +7,61 @@ import uuid from 'uuid';
 import { addMinutes } from 'date-fns';
 import { AnyARecord } from 'dns';
 
-const createToken = (user: any): string => {
-  return jwt.sign(user, process.env['JWT_SECRET'], {
+export interface ILoginResponse {
+  user?: User;
+  token?: string;
+}
+
+export interface IRegisterResponse {
+  user?: User;
+  exists?: boolean;
+}
+
+const createToken = async (user: any, clientInfo: ClientInfo): Promise<string> => {
+  const token = jwt.sign(user, process.env['JWT_SECRET'], {
     expiresIn: process.env['TOKEN_EXPIRES_IN'],
   });
+  await RefreshTokenModel.add(
+    token,
+    process.env['REFRESH_TOKEN_EXPIRES_IN'],
+    user.email,
+    clientInfo
+  );
+  return token;
 };
 
-export const login = async (email: string, password: string, clientInfo?: ClientInfo) => {
+export const login = async (
+  email: string, 
+  password: string, 
+  clientInfo?: ClientInfo): Promise<ILoginResponse> => {
   const user: any = await UserModel.authenticate(email, password);
-  const response: any = { user, token: '' };
-  if (user) {
-    const token = createToken(user.toJSON());
+  const response: ILoginResponse = {}
+  if (user.email) {
+    const token = await createToken(user.toJSON(), clientInfo);
+    response.user = user;
     response.token = token;
+    return response;
+  } else if (user.errorCode) {
+    throw createError(user.errorCode, user.errorMesage);
+  }
+};
+
+export const refreshToken = async (refreshToken: string) => {
+  const token = await RefreshTokenModel.getByToken(refreshToken);
+  const newToken = await RefreshTokenModel.refresh(token._id, process.env['REFRESH_TOKEN_EXPIRES_IN']); 
+  return newToken;
+};
+
+export const register = async (user: User): Promise<IRegisterResponse> => {
+  const response: IRegisterResponse = {};
+  const existingUser = await UserModel.getByEmail(user.email);
+  if (existingUser) {
+    response.exists = true;
+  } else {
+    response.exists = false;
+    response.user = await UserModel.createUser(user);
   }
   return response;
-};
-
-export const refreshToken = async (refreshToken: string) => {};
-
-export const register = async (user: User) => {
-  const savedUser: User = await UserModel.createUser(user);
-  return savedUser;
 };
 
 export const forgotPassword = async (email: string) => {
@@ -67,7 +101,7 @@ export const resetPassword = async (email: string, password: string, token: stri
       throw createError(403, 'There was a problem reseting your password. Token expired');
     }
     const hashedPassword = hashPassword(password);
-    await UserModel.updateUser(email, { password: hashedPassword });
+    await UserModel.updateUser(email, { password: hashedPassword, loginErrorCount: 0 });
     return { success: true };
   } catch (error) {
     throw error;

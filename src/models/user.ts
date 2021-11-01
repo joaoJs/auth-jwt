@@ -70,8 +70,10 @@ export class User {
     plainTextPassword: string
   ) {
     const user = await this.findOne({ email });
-    if (
-      user && 
+    if (!user) {
+      return {errorCode: 404, errorMessage: 'user not found'}
+    }
+    if ( 
       user.loginErrorCount < 3 &&
       (await bcrypt.compare(plainTextPassword, user.password))) {
       let authenticatedUser = user;
@@ -84,9 +86,9 @@ export class User {
         // TODO: force password reset here
       } else {
         user.loginErrorCount++;
-        const updatedUser = await this.findOneAndUpdate({ email }, { loginErrorCount: user.loginErrorCount }, { new: true });
+        await this.findOneAndUpdate({ email }, { loginErrorCount: user.loginErrorCount }, { new: true });
       }
-      return false;
+      return {errorCode: 401, errorMessage: 'invalid credentials'};
     }
   }
 }
