@@ -23,12 +23,12 @@ afterEach(async () => await db.clearDatabase());
 afterAll(async () => await db.closeDatabase());
 
 describe('user', () => {
-  it('can register user', async () => {
+  it('registers user correctly', async () => {
       createdUser = await auth.register(mockUser);
       expect(mockUser.email).toEqual(createdUser.user.email);
   });
 
-  it('can login user', async () => {
+  it('logs in correctly', async () => {
     createdUser = await auth.register(mockUser);
     const { user, token }: ILoginResponse = await auth.login(mockUser.email, mockUser.password);
     expect(mockUser.email).toEqual(user.email);
@@ -39,7 +39,7 @@ describe('user', () => {
     createdUser = await auth.register(mockUser);
     const { token }: ILoginResponse = await auth.login(mockUser.email, mockUser.password);
     const refreshToken = await auth.refreshToken(token);
-    expect(token).toBe(refreshToken._id);
+    expect(token).toBe(refreshToken.token);
   });
   
 });
