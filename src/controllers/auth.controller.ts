@@ -49,9 +49,7 @@ export const login = async (
 export const refreshToken = async (refreshToken: string) => {
   const token = await RefreshTokenModel.getByToken(refreshToken);
   const user = await UserModel.getByEmail(token.userId);
-  // const newToken = await RefreshTokenModel.refresh(token._id, process.env['REFRESH_TOKEN_EXPIRES_IN']); 
-  // return newToken;
-  return {token: token._id, userId: token.userId};
+  return { token, user };
 };
 
 export const register = async (user: User): Promise<IRegisterResponse> => {

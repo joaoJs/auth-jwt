@@ -1,5 +1,6 @@
 import { Request, Router, Response, NextFunction } from 'express';
 import { deleteToken, getTokens } from '../controllers/refresh-token.controller';
+import { refreshToken } from '../controllers/auth.controller';
 
 export default (app: any) => {
   const router = Router();
@@ -22,7 +23,8 @@ export default (app: any) => {
       try {
         const { token } = req.params;
         // call refresh token controller
-        const response: any = await deleteToken(token, req.user);
+        const { user } = await refreshToken(token);
+        const response: any = await deleteToken(token, user);
         if (response) {
           return res.json(response);
         }
